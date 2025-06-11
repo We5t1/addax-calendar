@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import CalendarDay from './calendar-day';
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, addMonths, subMonths } from 'date-fns';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 
@@ -32,7 +32,7 @@ const CalendarGrid: React.FC = () => {
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [calendarId, setCalendarId] = useState<string | null>(null);
-  const [allTags, setAllTags] = useState<Tag[]>([]); 
+  const [allTags, setAllTags] = useState<Tag[]>([]);
 
   useEffect(() => {
     const setupCalendar = async () => {
@@ -76,12 +76,12 @@ const CalendarGrid: React.FC = () => {
 
   const fetchHolidays = useCallback(async () => {
     const year = format(currentDate, 'yyyy');
-    const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/PL`); 
+    const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/PL`);
     if (res.ok) {
       const data = await res.json();
       setHolidays(data.map((h: any) => ({ date: h.date, name: h.name })));
     } else {
-      console.error('Failed to fetch holidays:', await res.text());
+      console.error('Failed to fetch holidays:', Error);
     }
   }, [currentDate]);
 
@@ -91,7 +91,7 @@ const CalendarGrid: React.FC = () => {
       const data = await res.json();
       setAllTags(data);
     } else {
-      console.error('Failed to fetch tags:', await res.text());
+      console.error('Failed to fetch tags:', Error);
     }
   }, []);
 
@@ -99,17 +99,15 @@ const CalendarGrid: React.FC = () => {
     if (calendarId) {
       fetchTasks();
       fetchHolidays();
-      fetchTags(); 
+      fetchTags();
     }
   }, [fetchTasks, fetchHolidays, fetchTags, calendarId]);
 
-
   const daysToDisplay = useMemo(() => {
-    const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 0 }); // Sunday start
-    const end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 0 }); // Saturday end
+    const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 0 });
+    const end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 0 });
     return eachDayOfInterval({ start, end });
   }, [currentDate]);
-
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination, draggableId } = result;
@@ -121,7 +119,7 @@ const CalendarGrid: React.FC = () => {
     const draggedTask = tasks.find(task => task.id === draggableId);
     if (!draggedTask) return;
 
-    const sourceDroppableId = source.droppableId; 
+    const sourceDroppableId = source.droppableId;
     const destinationDroppableId = destination.droppableId;
 
     setTasks(prevTasks => {
@@ -160,7 +158,6 @@ const CalendarGrid: React.FC = () => {
         return newTasks.sort((a, b) => (new Date(a.date).getTime() - new Date(b.date).getTime()) || (a.order - b.order));
     });
 
-
     try {
         if (sourceDroppableId === destinationDroppableId) {
             const dayTasks = tasks.filter(task => format(new Date(task.date), 'yyyy-MM-dd') === sourceDroppableId);
@@ -169,7 +166,7 @@ const CalendarGrid: React.FC = () => {
             reorderedDayTasks.splice(destination.index, 0, removed);
 
             const updates = reorderedDayTasks.map(async (task, index) => {
-                if (task.order !== index) { 
+                if (task.order !== index) {
                     const res = await fetch(`/api/tasks/${task.id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
@@ -188,11 +185,11 @@ const CalendarGrid: React.FC = () => {
             });
             if (!res.ok) throw new Error('Failed to move task');
 
-            fetchTasks(); 
+            fetchTasks();
         }
     } catch (error) {
         console.error('Error during drag and drop backend update:', error);
-        fetchTasks(); 
+        fetchTasks();
     }
   };
 
@@ -249,7 +246,7 @@ const CalendarGrid: React.FC = () => {
   }
 
   return (
-    <div className="p-4 w-full max-w-full"> 
+    <div className="p-4 w-full max-w-full">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-lg border border-gray-100">
         <div className="flex items-center space-x-2 mb-4 sm:mb-0">
           <button onClick={() => setCurrentDate(prev => subMonths(prev, 1))} className="p-2 rounded-full hover:bg-purple-100 transition-colors text-purple-600">
@@ -286,7 +283,7 @@ const CalendarGrid: React.FC = () => {
 
             return (
               <CalendarDay
-                key={dateString} 
+                key={dateString}
                 date={dateObj}
                 tasks={dayTasks}
                 holidays={dayHolidays}
@@ -295,7 +292,7 @@ const CalendarGrid: React.FC = () => {
                 onCreateTask={handleCreateTask}
                 onDeleteTask={handleDeleteTask}
                 droppableId={dateString}
-                allTags={allTags} 
+                allTags={allTags}
               />
             );
           })}

@@ -2,11 +2,11 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const taskId = params.id;
+  const { id: taskId } = await params; 
   const { date, content, order, tagIds } = await request.json();
 
   try {
-    const data: any = { updatedAt: new Date() }; 
+    const data: any = { updatedAt: new Date() };
     if (date !== undefined) data.date = new Date(date);
     if (content !== undefined) data.content = content;
     if (order !== undefined) data.order = order;
@@ -20,7 +20,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       where: { id: taskId },
       data,
       include: {
-        tags: true, 
+        tags: true,
       },
     });
     return NextResponse.json(updatedTask);
@@ -31,7 +31,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const taskId = params.id;
+  const { id: taskId } = await params;
 
   try {
     await db.task.delete({

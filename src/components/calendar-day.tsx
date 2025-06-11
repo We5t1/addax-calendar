@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import TaskItem from './task-item';
 import { format } from 'date-fns';
-import { Droppable } from 'react-beautiful-dnd';
+import { Droppable } from '@hello-pangea/dnd';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
 interface Tag {
@@ -34,7 +34,7 @@ interface CalendarDayProps {
   onCreateTask: (date: string, content: string, tagIds: string[]) => void;
   onDeleteTask: (taskId: string) => void;
   droppableId: string;
-  allTags: Tag[]; 
+  allTags: Tag[];
 }
 
 const CalendarDay: React.FC<CalendarDayProps> = ({
@@ -54,16 +54,22 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 
   const handleAddTask = () => {
     if (newTaskContent.trim()) {
+      console.log("CalendarDay: Attempting to create task. Content:", newTaskContent, "Selected Tag IDs:", selectedNewTaskTagIds);
       onCreateTask(format(date, 'yyyy-MM-dd'), newTaskContent, selectedNewTaskTagIds);
       setNewTaskContent('');
       setSelectedNewTaskTagIds([]);
       setIsAddingTask(false);
     } else {
+      // If content is empty, just close the add task form without creating
       setIsAddingTask(false);
+      setNewTaskContent('');
+      setSelectedNewTaskTagIds([]);
     }
   };
 
   const sortedTasks = [...tasks].sort((a, b) => a.order - b.order);
+
+  const dropDisabled = !isCurrentMonth; 
 
   return (
     <div
@@ -84,7 +90,12 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
         </div>
       </div>
 
-      <Droppable droppableId={droppableId}>
+      <Droppable 
+        droppableId={droppableId} 
+        isDropDisabled={dropDisabled} 
+        isCombineEnabled={false} 
+        ignoreContainerClipping={false} 
+      > 
         {(provided) => (
           <div
             ref={provided.innerRef}
@@ -93,7 +104,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
           >
             {sortedTasks.map((task, index) => (
               <TaskItem
-                key={task.id} 
+                key={task.id}
                 task={task}
                 index={index}
                 onUpdateTask={onUpdateTask}
@@ -109,7 +120,6 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
                   type="text"
                   value={newTaskContent}
                   onChange={(e) => setNewTaskContent(e.target.value)}
-                  onBlur={handleAddTask}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleAddTask();
                     if (e.key === 'Escape') {
@@ -125,11 +135,12 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
                 <select
                   multiple
                   value={selectedNewTaskTagIds}
-                  onChange={(e) =>
-                    setSelectedNewTaskTagIds(
-                      Array.from(e.target.selectedOptions, (option) => option.value)
-                    )
-                  }
+                  onChange={(e) => {
+                    const selectedOptions = Array.from(e.target.selectedOptions);
+                    const newSelectedIds = selectedOptions.map(option => option.value);
+                    setSelectedNewTaskTagIds(newSelectedIds);
+                    console.log("CalendarDay: New Task Tag IDs selected:", newSelectedIds);
+                  }}
                   className="w-full text-sm p-1.5 rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-[40px]"
                 >
                   {allTags.map((tag) => (
