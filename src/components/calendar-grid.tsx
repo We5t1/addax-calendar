@@ -76,7 +76,7 @@ const CalendarGrid: React.FC = () => {
 
   const fetchHolidays = useCallback(async () => {
     const year = format(currentDate, 'yyyy');
-    const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/PL`);
+    const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/UA`);
     if (res.ok) {
       const data = await res.json();
       setHolidays(data.map((h: any) => ({ date: h.date, name: h.name })));
@@ -127,26 +127,26 @@ const CalendarGrid: React.FC = () => {
 
         const draggedTaskIndexInPrev = newTasks.findIndex(t => t.id === draggableId);
         if (draggedTaskIndexInPrev > -1) {
-            newTasks.splice(draggedTaskIndexInPrev, 1);
+          newTasks.splice(draggedTaskIndexInPrev, 1);
         }
 
         const sourceDayTasks = newTasks
-            .filter(t => format(new Date(t.date), 'yyyy-MM-dd') === sourceDroppableId)
-            .sort((a, b) => a.order - b.order)
-            .map((t, i) => ({ ...t, order: i }));
+          .filter(t => format(new Date(t.date), 'yyyy-MM-dd') === sourceDroppableId)
+          .sort((a, b) => a.order - b.order)
+          .map((t, i) => ({ ...t, order: i }));
 
         newTasks = newTasks.filter(t => format(new Date(t.date), 'yyyy-MM-dd') !== sourceDroppableId);
         newTasks.push(...sourceDayTasks);
 
         const updatedDraggedTask = {
-            ...draggedTask,
-            date: destinationDroppableId,
-            order: destination.index,
+          ...draggedTask,
+          date: destinationDroppableId,
+          order: destination.index,
         };
 
         const destinationDayTasks = newTasks
-            .filter(t => format(new Date(t.date), 'yyyy-MM-dd') === destinationDroppableId)
-            .sort((a, b) => a.order - b.order);
+          .filter(t => format(new Date(t.date), 'yyyy-MM-dd') === destinationDroppableId)
+          .sort((a, b) => a.order - b.order);
 
         destinationDayTasks.splice(destination.index, 0, updatedDraggedTask);
 
@@ -160,32 +160,32 @@ const CalendarGrid: React.FC = () => {
 
     try {
         if (sourceDroppableId === destinationDroppableId) {
-            const dayTasks = tasks.filter(task => format(new Date(task.date), 'yyyy-MM-dd') === sourceDroppableId);
-            const reorderedDayTasks = Array.from(dayTasks);
-            const [removed] = reorderedDayTasks.splice(source.index, 1);
-            reorderedDayTasks.splice(destination.index, 0, removed);
+          const dayTasks = tasks.filter(task => format(new Date(task.date), 'yyyy-MM-dd') === sourceDroppableId);
+          const reorderedDayTasks = Array.from(dayTasks);
+          const [removed] = reorderedDayTasks.splice(source.index, 1);
+          reorderedDayTasks.splice(destination.index, 0, removed);
 
-            const updates = reorderedDayTasks.map(async (task, index) => {
-                if (task.order !== index) {
-                    const res = await fetch(`/api/tasks/${task.id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ order: index }),
-                    });
-                    if (!res.ok) throw new Error('Failed to update task order');
-                }
-            });
-            await Promise.all(updates);
-
-        } else {
-            const res = await fetch(`/api/tasks/${draggableId}`, {
+          const updates = reorderedDayTasks.map(async (task, index) => {
+            if (task.order !== index) {
+              const res = await fetch(`/api/tasks/${task.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ date: destinationDroppableId, order: destination.index }),
-            });
-            if (!res.ok) throw new Error('Failed to move task');
+                body: JSON.stringify({ order: index }),
+              });
+              if (!res.ok) throw new Error('Failed to update task order');
+            }
+          });
+          await Promise.all(updates);
 
-            fetchTasks();
+        } else {
+          const res = await fetch(`/api/tasks/${draggableId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: destinationDroppableId, order: destination.index }),
+          });
+          if (!res.ok) throw new Error('Failed to move task');
+
+          fetchTasks();
         }
     } catch (error) {
         console.error('Error during drag and drop backend update:', error);
@@ -246,31 +246,32 @@ const CalendarGrid: React.FC = () => {
   }
 
   return (
-    <div className="p-4 w-full max-w-full">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-lg border border-gray-100">
+    <div className="p-0 w-full max-w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-4">
         <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-          <button onClick={() => setCurrentDate(prev => subMonths(prev, 1))} className="p-2 rounded-full hover:bg-purple-100 transition-colors text-purple-600">
+          <button onClick={() => setCurrentDate(prev => subMonths(prev, 1))} className="p-2 rounded-full hover:bg-amber-100 transition-colors text-black">
             <ChevronLeftIcon className="h-6 w-6" />
           </button>
-          <h2 className="text-3xl font-extrabold text-purple-800 tracking-tight">
+          <h2 className="text-3xl font-bold text-black tracking-tight">
             {format(currentDate, 'MMMM yyyy')}
           </h2>
-          <button onClick={() => setCurrentDate(prev => addMonths(prev, 1))} className="p-2 rounded-full hover:bg-purple-100 transition-colors text-purple-600">
+          <button onClick={() => setCurrentDate(prev => addMonths(prev, 1))} className="p-2 rounded-full hover:bg-amber-100 transition-colors text-black">
             <ChevronRightIcon className="h-6 w-6" />
           </button>
         </div>
         <input
           type="text"
           placeholder="Search tasks or tags..."
-          className="p-2 border border-purple-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-1/3 text-gray-700 placeholder-gray-400"
+          className="p-2 border-2 border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-300 w-full sm:w-1/3 text-gray-700 placeholder-gray-400"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      <div className="grid grid-cols-7 gap-1 bg-purple-200 rounded-xl overflow-hidden shadow-2xl border border-purple-300">
+      {/* Increased gap-x to 2 and adjusted column definitions for wider cards */}
+      <div className="grid grid-cols-7 gap-x-2 bg-gray-200 overflow-hidden shadow-2xl border border-gray-300">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="py-3 text-center text-sm font-bold text-purple-800 bg-purple-100 uppercase tracking-wider border-b border-purple-300">
+          <div key={day} className="py-3 text-center text-sm font-bold text-gray-800 bg-gray-100 uppercase tracking-wider border-b border-gray-300">
             {day}
           </div>
         ))}
