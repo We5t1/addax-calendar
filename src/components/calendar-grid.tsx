@@ -185,7 +185,9 @@ const CalendarGrid: React.FC = () => {
           });
           if (!res.ok) throw new Error('Failed to move task');
 
-          fetchTasks();
+          if (!isSameMonth(new Date(destinationDroppableId), currentDate)) {
+             fetchTasks();
+          }
         }
     } catch (error) {
         console.error('Error during drag and drop backend update:', error);
@@ -247,12 +249,12 @@ const CalendarGrid: React.FC = () => {
 
   return (
     <div className="p-0 w-full max-w-full">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 p-2 sm:p-4">
         <div className="flex items-center space-x-2 mb-4 sm:mb-0">
           <button onClick={() => setCurrentDate(prev => subMonths(prev, 1))} className="p-2 rounded-full hover:bg-amber-100 transition-colors text-black">
             <ChevronLeftIcon className="h-6 w-6" />
           </button>
-          <h2 className="text-3xl font-bold text-black tracking-tight">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black tracking-tight">
             {format(currentDate, 'MMMM yyyy')}
           </h2>
           <button onClick={() => setCurrentDate(prev => addMonths(prev, 1))} className="p-2 rounded-full hover:bg-amber-100 transition-colors text-black">
@@ -262,41 +264,43 @@ const CalendarGrid: React.FC = () => {
         <input
           type="text"
           placeholder="Search tasks or tags..."
-          className="p-2 border-2 border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-300 w-full sm:w-1/3 text-gray-700 placeholder-gray-400"
+          className="p-2 border-2 border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-300 w-full sm:w-1/3 text-gray-700 placeholder-gray-400 rounded-md"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      {/* Increased gap-x to 2 and adjusted column definitions for wider cards */}
-      <div className="grid grid-cols-7 gap-x-2 bg-gray-200 overflow-hidden shadow-2xl border border-gray-300">
+      <div className="grid grid-cols-7 gap-px sm:gap-1 md:gap-x-1 md:gap-y-1 bg-gray-200 overflow-hidden shadow-2xl border border-gray-300">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="py-3 text-center text-sm font-bold text-gray-800 bg-gray-100 uppercase tracking-wider border-b border-gray-300">
-            {day}
+          <div key={day} className="py-2 sm:py-3 text-center text-xs sm:text-sm font-bold text-gray-800 bg-gray-100 uppercase tracking-wider border-b border-gray-300">
+            <span className="hidden sm:inline">{day}</span>
+            <span className="inline sm:hidden"></span>
           </div>
         ))}
         <DragDropContext onDragEnd={onDragEnd}>
-          {daysToDisplay.map((dateObj) => {
-            const dateString = format(dateObj, 'yyyy-MM-dd');
-            const dayTasks = filteredTasks.filter(task => format(new Date(task.date), 'yyyy-MM-dd') === dateString);
-            const dayHolidays = holidays.filter(holiday => holiday.date === dateString);
-            const isCurrentMonthDay = isSameMonth(dateObj, currentDate);
+          <div className="grid col-span-7 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-px sm:gap-1 md:gap-x-1 md:gap-y-1 bg-gray-200">
+            {daysToDisplay.map((dateObj) => {
+              const dateString = format(dateObj, 'yyyy-MM-dd');
+              const dayTasks = filteredTasks.filter(task => format(new Date(task.date), 'yyyy-MM-dd') === dateString);
+              const dayHolidays = holidays.filter(holiday => holiday.date === dateString);
+              const isCurrentMonthDay = isSameMonth(dateObj, currentDate);
 
-            return (
-              <CalendarDay
-                key={dateString}
-                date={dateObj}
-                tasks={dayTasks}
-                holidays={dayHolidays}
-                isCurrentMonth={isCurrentMonthDay}
-                onUpdateTask={handleUpdateTask}
-                onCreateTask={handleCreateTask}
-                onDeleteTask={handleDeleteTask}
-                droppableId={dateString}
-                allTags={allTags}
-              />
-            );
-          })}
+              return (
+                <CalendarDay
+                  key={dateString}
+                  date={dateObj}
+                  tasks={dayTasks}
+                  holidays={dayHolidays}
+                  isCurrentMonth={isCurrentMonthDay}
+                  onUpdateTask={handleUpdateTask}
+                  onCreateTask={handleCreateTask}
+                  onDeleteTask={handleDeleteTask}
+                  droppableId={dateString}
+                  allTags={allTags}
+                />
+              );
+            })}
+          </div>
         </DragDropContext>
       </div>
     </div>

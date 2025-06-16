@@ -54,13 +54,11 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 
   const handleAddTask = () => {
     if (newTaskContent.trim()) {
-      console.log("CalendarDay: Attempting to create task. Content:", newTaskContent, "Selected Tag IDs:", selectedNewTaskTagIds);
       onCreateTask(format(date, 'yyyy-MM-dd'), newTaskContent, selectedNewTaskTagIds);
       setNewTaskContent('');
       setSelectedNewTaskTagIds([]);
       setIsAddingTask(false);
     } else {
-      // If content is empty, just close the add task form without creating
       setIsAddingTask(false);
       setNewTaskContent('');
       setSelectedNewTaskTagIds([]);
@@ -73,12 +71,12 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 
   return (
     <div
-      className={`relative h-48 sm:h-56 md:h-64 lg:h-72 xl:h-80 p-2 border border-gray-200 flex flex-col transition-colors duration-200
+      className={`relative min-h-[120px] sm:min-h-[160px] md:min-h-[200px] lg:min-h-[240px] p-1 sm:p-2 border border-gray-200 flex flex-col transition-colors duration-200
         ${isCurrentMonth ? 'bg-white text-gray-900' : 'bg-gray-50 text-gray-400'}
         hover:shadow-lg hover:border-gray-400`}
     >
       <div className="flex justify-between items-start mb-1 px-1">
-        <span className={`text-lg font-bold ${isCurrentMonth ? 'text-gray-800' : 'text-gray-400'}`}>
+        <span className={`text-md sm:text-lg font-bold ${isCurrentMonth ? 'text-gray-800' : 'text-gray-400'}`}>
           {format(date, 'd')}
         </span>
         <div className="text-xs font-semibold text-amber-600 flex flex-col items-end max-w-[70%] text-right">
@@ -116,12 +114,12 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 
             {isAddingTask ? (
               <div className="p-2 bg-gray-50 rounded-lg border border-gray-200 flex flex-col gap-1">
-                <textarea 
+                <textarea
                   value={newTaskContent}
                   onChange={(e) => setNewTaskContent(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) { // Save on Enter, but allow Shift+Enter for new line
-                      e.preventDefault(); 
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
                       handleAddTask();
                     }
                     if (e.key === 'Escape') {
@@ -141,7 +139,6 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
                     const selectedOptions = Array.from(e.target.selectedOptions);
                     const newSelectedIds = selectedOptions.map(option => option.value);
                     setSelectedNewTaskTagIds(newSelectedIds);
-                    console.log("CalendarDay: New Task Tag IDs selected:", newSelectedIds);
                   }}
                   className="w-full text-sm p-1.5 rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 min-h-[40px]"
                 >
@@ -156,12 +153,14 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => setIsAddingTask(true)}
-                className="w-full text-left text-sm text-amber-600 hover:text-amber-800 hover:underline p-2 mt-auto flex items-center justify-center space-x-1 font-medium bg-amber-100 rounded-lg hover:bg-amber-200 transition-colors"
-              >
-                <PlusIcon className="h-4 w-4" /> <span>Add task</span>
-              </button>
+              isCurrentMonth && (
+                <button
+                  onClick={() => setIsAddingTask(true)}
+                  className="w-full text-left text-sm text-amber-600 hover:text-amber-800 hover:underline p-1 sm:p-2 mt-auto flex items-center justify-center space-x-1 font-medium bg-amber-100 rounded-lg hover:bg-amber-200 transition-colors"
+                >
+                  <PlusIcon className="h-4 w-4" /> <span>Add task</span>
+                </button>
+              )
             )}
           </div>
         )}
