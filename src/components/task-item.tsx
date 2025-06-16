@@ -40,30 +40,28 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, index, onUpdateTask, onDelete
       const tempDiv = document.createElement('div');
       tempDiv.style.visibility = 'hidden';
       tempDiv.style.position = 'absolute';
-      tempDiv.style.width = contentRef.current.clientWidth + 'px'; 
+      tempDiv.style.width = contentRef.current.clientWidth + 'px';
       tempDiv.style.fontFamily = getComputedStyle(contentRef.current).fontFamily;
       tempDiv.style.fontSize = getComputedStyle(contentRef.current).fontSize;
       tempDiv.style.lineHeight = getComputedStyle(contentRef.current).lineHeight;
-      tempDiv.style.whiteSpace = 'pre-wrap'; 
+      tempDiv.style.whiteSpace = 'pre-wrap';
       tempDiv.textContent = task.content;
       document.body.appendChild(tempDiv);
 
       const lineHeight = parseFloat(getComputedStyle(contentRef.current).lineHeight);
-      const clampedHeightThreshold = lineHeight * 3; 
-
+      const clampedHeightThreshold = lineHeight * 2.5;
       setHasMoreContent(tempDiv.scrollHeight > clampedHeightThreshold);
 
       document.body.removeChild(tempDiv);
     }
-  }, [task.content, isExpanded, isEditing]); 
+  }, [task.content, isExpanded, isEditing]);
 
   const handleSave = () => {
     if (editedContent.trim()) {
-      console.log("TaskItem: Attempting to save task. Content:", editedContent, "Selected Tag IDs:", selectedTagIds);
       onUpdateTask(task.id, editedContent, selectedTagIds);
     }
     setIsEditing(false);
-    setIsExpanded(false); 
+    setIsExpanded(false);
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -76,14 +74,14 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, index, onUpdateTask, onDelete
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsEditing(true);
-    setIsExpanded(true); 
+    setIsExpanded(true);
   }
 
   const getTagColorClasses = (color: string) => {
     if (color.startsWith('bg-')) {
       return color;
     }
-    return 'bg-gray-400 text-white';
+    return 'bg-gray-400';
   };
 
   return (
@@ -97,19 +95,18 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, index, onUpdateTask, onDelete
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          className="relative bg-gradient-to-r from-white-50 to-white-100 border-[1px] rounded-sm border-white-200 p-2 text-sm shadow-sm mb-1 flex flex-col hover:shadow-md transition-all duration-200 group"
+          className="relative bg-gradient-to-r from-white-50 to-white-100 border-[1px] rounded-sm border-white-200 p-1 sm:p-2 text-xs sm:text-sm shadow-sm mb-1 flex flex-col hover:shadow-md transition-all duration-200 group"
           onDoubleClick={() => setIsEditing(true)}
           onMouseEnter={() => setShowActions(true)}
           onMouseLeave={() => setShowActions(false)}
         >
-          {/* Action icons (Drag, Edit, Delete) - always rendered, visibility controlled by opacity/pointer-events */}
           <div className={`absolute bottom-1 right-1 flex space-x-1 transition-opacity z-10 ${showActions && !isEditing ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
             <div
               {...provided.dragHandleProps}
               className="p-1 cursor-grab text-gray-400 hover:text-gray-600"
               aria-label="Drag task"
             >
-              <ArrowsPointingOutIcon className="h-4 w-4 rotate-45" />
+              <ArrowsPointingOutIcon className="h-4 w-4" />
             </div>
             <button
               onClick={handleEditClick}
@@ -153,7 +150,6 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, index, onUpdateTask, onDelete
                 onChange={(e) => {
                   const newSelectedIds = Array.from(e.target.selectedOptions, (option) => option.value);
                   setSelectedTagIds(newSelectedIds);
-                  console.log("TaskItem: Editing Task Tag IDs selected:", newSelectedIds);
                 }}
                 className="w-full text-sm p-1.5 rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 min-h-[40px]"
               >
@@ -171,22 +167,22 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, index, onUpdateTask, onDelete
             <>
               <div className="flex flex-wrap gap-1 mb-1">
                 {task.tags.map(tag => (
-                <span
-                  key={tag.id}
-                  className={`${getTagColorClasses(tag.color)} text-white text-xs px-2 py-0.5 rounded-full font-medium inline-block`} 
-                >
-                  {tag.name}
-                </span>
+                  <span
+                    key={tag.id}
+                    className={`${getTagColorClasses(tag.color)} text-white text-xs px-2 py-0.5 rounded-full font-medium inline-block`}
+                  >
+                    {tag.name}
+                  </span>
                 ))}
               </div>
               <div
                 ref={contentRef}
-                className={`text-gray-800 font-medium leading-tight whitespace-pre-wrap flex-grow ${!isExpanded && hasMoreContent ? 'line-clamp-3' : ''}`}
+                className={`text-gray-800 font-medium leading-tight whitespace-pre-wrap flex-grow ${!isExpanded && hasMoreContent ? 'line-clamp-2 sm:line-clamp-3' : ''}`}
               >
                 {task.content}
               </div>
 
-              {hasMoreContent && ( 
+              {hasMoreContent && (
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
                   className="absolute bottom-1 left-2 text-amber-600 text-[8px] flex items-center justify-start hover:underline z-10"
